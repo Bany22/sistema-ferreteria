@@ -1,0 +1,76 @@
+# ============================================================
+# DIGICOMP — Apache 2.4.58 + PHP 8.2.12 (XAMPP 8.2.12)
+# ============================================================
+
+Options -Indexes
+Options -MultiViews
+AddDefaultCharset UTF-8
+
+# ── PHP 8.2 settings (mod_php) ───────────────────────────────
+<IfModule mod_php8.c>
+    # Charset
+    php_value  default_charset          "UTF-8"
+    php_value  default_mimetype         "text/html"
+
+    # Errores — DESARROLLO (cambiar display_errors a Off en producción)
+    php_flag   display_errors           On
+    php_flag   display_startup_errors   On
+    php_value  error_reporting          32767
+
+    # Archivos
+    php_value  upload_max_filesize      10M
+    php_value  post_max_size            12M
+    php_value  max_execution_time       60
+    php_value  max_input_time           60
+    php_value  memory_limit             256M
+
+    # Sesiones seguras
+    php_flag   session.cookie_httponly  On
+    php_flag   session.use_strict_mode  On
+    php_value  session.gc_maxlifetime   7200
+
+    # Timezone Guatemala
+    php_value  date.timezone            "America/Guatemala"
+</IfModule>
+
+# ── Seguridad: bloquear acceso directo ───────────────────────
+<FilesMatch "\.(sql|log|env|ini|sh|bak|md|json)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Bloquear acceso a /includes/ directamente
+    RewriteRule ^includes/  -  [F,L]
+    # Bloquear acceso a archivos SQL sueltos
+    RewriteRule \.sql$      -  [F,L]
+</IfModule>
+
+# ── Cache de assets estáticos ────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css               "access plus 7 days"
+    ExpiresByType application/javascript "access plus 7 days"
+    ExpiresByType image/png              "access plus 30 days"
+    ExpiresByType image/jpeg             "access plus 30 days"
+    ExpiresByType image/svg+xml         "access plus 30 days"
+    ExpiresByType application/json      "access plus 0 seconds"
+</IfModule>
+
+# ── Compresión ───────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/json
+</IfModule>
+
+# ── Headers de seguridad ─────────────────────────────────────
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
